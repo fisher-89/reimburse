@@ -276,6 +276,7 @@ class ReimbursementList
     private function updateExpense($reimburse, $request)
     {
         if (!empty($request->expense)) {//提交上来消费明细不为空
+            $this->updateDeleteExpense($reimburse,$request);
             foreach ($request->expense as $k => $v) {
                 if (isset($v['id'])) {
                     $this->updateExpenseData($v, $reimburse['status_id']);
@@ -285,6 +286,22 @@ class ReimbursementList
             }
         } else {
             $this->deleteExpenseBills($reimburse['id']); //删除消费明细及发票
+        }
+    }
+
+    /**
+     * 编辑删除多余的明细
+     * @param $reimburse
+     * @param $request
+     */
+    private function updateDeleteExpense($reimburse,$request){
+        $expense_id = array_filter(array_pluck($request->expense,'id'));
+        $expense = Expense::with('bills')->where('reim_id',$reimburse['id'])->get();
+        foreach($expense as $k=>$v){
+            if(!in_array($v->id,$expense_id)){
+                $v->bills()->delete();
+                $v->delete();
+            }
         }
     }
 
