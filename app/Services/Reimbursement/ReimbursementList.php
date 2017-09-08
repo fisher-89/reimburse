@@ -278,7 +278,7 @@ class ReimbursementList
         if (!empty($request->expense)) {//提交上来消费明细不为空
             $this->updateDeleteExpense($reimburse,$request);
             foreach ($request->expense as $k => $v) {
-                if (isset($v['id'])) {
+                if (isset($v['id']) && $v['id'] != 'undefined') {
                     $this->updateExpenseData($v, $reimburse['status_id']);
                 } else {
                     $this->insertExpenseBills($v, $reimburse['id'], $reimburse['status_id']);
