@@ -45,6 +45,7 @@ function reset() {
         $('#form')[0].reset();
     }
 }
+
 //确定
 function back() {
     var data = expense.save();
@@ -84,7 +85,7 @@ var expense = {
         if (session_id != undefined) {//编辑session的键数据
             data['session_id'] = session_id;
         }
-        if (id != undefined) {//编辑的id
+        if (id != 'undefined' && id != undefined) {//编辑的id
             data['id'] = id;
         }
         return data;
@@ -131,10 +132,12 @@ $("#expense_type img").on("click", function () {
     });
 });
 /*---------------------删除发票start-----------------------------*/
+
 //pc双加进行删除
 function pc_dblclick_delete(self) {
     delete_bill(self);
 }
+
 //手机长按屏幕进行删除
 function phone_touch_delete(self) {
     var j = 0;
@@ -165,4 +168,5 @@ function delete_bill(self) {
         });
     }
 }
+
 /*---------------------删除发票end----------------------------*/
