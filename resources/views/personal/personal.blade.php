@@ -26,6 +26,9 @@
         </div>
     </div>
 @endsection
+@section('footer')
+    <div id="date"></div>
+@endsection
 @section('js')
     @parent
     <script>
@@ -36,6 +39,11 @@
         $(function () {
             var per = new personal();
             per.getBackground();
+
+            setInterval(function(){
+                var html ='<div class="text-center" style="background: #27b4c5; color:#ffffff;">'+new Date().toLocaleString()+'</div>';
+                $("#date").html(html);
+            },1000);
         });
 
         function personal() {
@@ -44,7 +52,7 @@
                 var img1 = 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1504421183336&di=ac09e1dca05ab8c0aa52a8ed1719ca24&imgtype=0&src=http%3A%2F%2Fimg.taopic.com%2Fuploads%2Fallimg%2F140616%2F240472-1406160R03110.jpg';
                 var img2 = 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1505012185&di=74d929737f7fb245bddbde2d595ccc04&imgtype=jpg&er=1&src=http%3A%2F%2Fimg.hb.aicdn.com%2F60ef23c10e64aba53f750ece9272fb5717bfe0a8c443-1Id1OD_fw580';
                 var arr = [img, img1, img2];
-                $('#background').css({'background':'url('+arr[2]+')'});
+                $('#background').css({'background': 'url(' + arr[2] + ')'});
                 var i = 0;
                 var length = arr.length - 1;
                 var timer = 0;
@@ -54,7 +62,7 @@
                     } else {
                         i = 0;
                     }
-                    $('#background').css({'background':'url('+arr[i]+')'});
+                    $('#background').css({'background': 'url(' + arr[i] + ')'});
 
                 }, '3000');
             }
