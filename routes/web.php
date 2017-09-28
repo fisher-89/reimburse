@@ -41,8 +41,8 @@ Route::group(['middleware' => 'dingding'], function () {
     Route::get('/get_reimbursement_list', ['uses' => 'ReimburseController@showMyReimbursements']); //AJAX获取我的报销单列表
     Route::get('check_reimbursement/{id}', ['uses' => 'ReimburseController@checkReimbursement'])->name('check_reimbursement')->where('id', '\d+'); //查看报销单详情
     Route::post('withdraw', ['uses' => 'ReimburseController@withdraw'])->name('withdraw'); //撤回（我的报销单）
-    Route::post('/deleteReim',['uses'=>'ReimburseController@deleteReim'])->name('deleteReim');//删除未提交的单
-    Route::post('/deleteReject',['uses'=>'ReimburseController@deleteReject'])->name('deleteReject');//删除驳回的单
+    Route::post('/deleteReim', ['uses' => 'ReimburseController@deleteReim'])->name('deleteReim');//删除未提交的单
+    Route::post('/deleteReject', ['uses' => 'ReimburseController@deleteReject'])->name('deleteReject');//删除驳回的单
     /* ------------------我的报销单end----------------- */
 
     /* ----------------------待审批报销单start-------------------------- */
@@ -60,6 +60,9 @@ Route::group(['middleware' => 'dingding'], function () {
     Route::get('hasCompletedList', ['uses' => 'UserController@showCompleteList'])->name('hasCompletedList'); //已完成报销单列表
     Route::get('personal', ['uses' => 'UserController@showHomePage'])->name('personal'); //个人中心
 
+    Route::get('/getCsrfToken', function () {
+        return 'getCsrfTokenSuccess';
+    });//续期csrfToken
 });
 
 Route::get('/logout', ['uses' => 'UserController@logout']); //退出应用
