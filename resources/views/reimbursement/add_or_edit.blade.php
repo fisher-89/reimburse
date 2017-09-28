@@ -84,6 +84,21 @@
 @section('js')
     @parent
     <script>
+
+        //定时获取csrftoken
+        function setIntervalGetCsrfToken() {
+            $.ajax({
+                type: 'get',
+                url: '/getCsrfToken',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function (msg) {
+                    console.log(msg);
+                }
+            })
+        }
+
         //    if (window.history.state == null) {
         //        history.replaceState(1, "测试");
         //    } else {
@@ -102,6 +117,7 @@
 //            console.log(JSON.parse(sessionStorage.getItem('expense')));
             getPayeeApproverExpenseInfo();//获取收款人、审批人、消费明细数据
             checkIfCouldSend();//初始提交送审按钮
+            setInterval(setIntervalGetCsrfToken, '3600000');//续期csrftoken
         });
 
 
@@ -329,7 +345,7 @@
                             } else {
                                 window.history.go(-1);
                             }
-                        }else if(info == 'dingdingError'){
+                        } else if (info == 'dingdingError') {
                             sessionStorage.clear();
                             alert('提交成功（无法获取审批人钉钉号，审批人可能没收到消息提示。处理步骤：1.进入个人中心退出系统后，重新登录。2.把提交的报销单撤回，重新提交。）');
                             window.history.go(-1);
@@ -365,7 +381,7 @@
                     type: 'post',
                     url: url,
                     data: {id: id},
-                    dataType:'text',
+                    dataType: 'text',
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
