@@ -117,7 +117,7 @@
 //            console.log(JSON.parse(sessionStorage.getItem('expense')));
             getPayeeApproverExpenseInfo();//获取收款人、审批人、消费明细数据
             checkIfCouldSend();//初始提交送审按钮
-            setInterval(setIntervalGetCsrfToken, '3600000');//续期csrftoken
+            setInterval(setIntervalGetCsrfToken, 3600000);//续期csrftoken
         });
 
 
