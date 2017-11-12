@@ -191,7 +191,7 @@
                 var list = '';
                 var total = 0;
                 $.each(expense_data, function (k, v) {
-                    total += parseFloat(v.send_cost);
+                    total += eval(v.send_cost+'*100');
                     var description = (v.description.length > 5) ? v.description.substring(0, 5) + '..' : v.description;
                     list += '<a href="/add_expense/' + id + '/' + k + '" class="btn btn-lg edit_expense">' +
                         '<div class="logo text-center"><img src="' + v.type_img + '"></div>' +
@@ -200,6 +200,7 @@
                         '<div class="bill_num">' + v.bill_num + '</div>' +
                         '</a>';
                 });
+                total = (total/100).toFixed(2);
                 str = '<div class="title">';
                 str += '<div class="count">共 <span>' + expense_data.length + '</span> 条消费</div>';
                 str += '<div class="total">总计：<span>￥' + total + '</span></div>';
