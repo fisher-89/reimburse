@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use DB;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Storage;
 
 class Expense extends Model {
+
+    use SoftDeletes;
 
     public $timestamps = false;
 
