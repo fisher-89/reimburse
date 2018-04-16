@@ -46,11 +46,11 @@ class PayeeController extends Controller {
     public function submitPayee(Request $request) {
         $rules = [
             'phone' => 'required|digits:11',
-            'bank_other' => 'required|string|between:4,8|in:中国农业银行,中国工商银行,中国建设银行,中国银行,交通银行,招商银行,中国邮政储蓄银行',
-            'bank_account_name' => 'required|string|between:2,5',
+            'bank_other' => 'required|string|between:4,8|in:中国农业银行,中国工商银行,中国建设银行,中国银行,交通银行,招商银行,中国邮政储蓄银行,农村商业银行',
+            'bank_account_name' => 'required|string|between:2,20',
             'bank_account' => 'required|digits_between:15,19',
             'province_of_account' => 'required|exists:region,id',
-            'bank_dot' => 'required_if:bank_other,中国工商银行,中国建设银行,中国银行,交通银行,招商银行,中国邮政储蓄银行|string|max:30',
+            'bank_dot' => 'required_if:bank_other,中国工商银行,中国建设银行,中国银行,交通银行,招商银行,中国邮政储蓄银行,农村商业银行|string|max:30',
         ];
         if($request->city_of_account){
             $rules['city_of_account'] = 'required|numeric|exists:region,id,parent_id,'.$request->province_of_account;

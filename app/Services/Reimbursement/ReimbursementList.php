@@ -276,7 +276,7 @@ class ReimbursementList
     private function updateExpense($reimburse, $request)
     {
         if (!empty($request->expense)) {//提交上来消费明细不为空
-            $this->updateDeleteExpense($reimburse,$request);
+            $this->updateDeleteExpense($reimburse, $request);
             foreach ($request->expense as $k => $v) {
                 if (isset($v['id']) && $v['id'] != 'undefined') {
                     $this->updateExpenseData($v, $reimburse['status_id']);
@@ -294,11 +294,12 @@ class ReimbursementList
      * @param $reimburse
      * @param $request
      */
-    private function updateDeleteExpense($reimburse,$request){
-        $expense_id = array_filter(array_pluck($request->expense,'id'));
-        $expense = Expense::with('bills')->where('reim_id',$reimburse['id'])->get();
-        foreach($expense as $k=>$v){
-            if(!in_array($v->id,$expense_id)){
+    private function updateDeleteExpense($reimburse, $request)
+    {
+        $expense_id = array_filter(array_pluck($request->expense, 'id'));
+        $expense = Expense::with('bills')->where('reim_id', $reimburse['id'])->get();
+        foreach ($expense as $k => $v) {
+            if (!in_array($v->id, $expense_id)) {
                 $v->bills()->delete();
                 $v->delete();
             }
@@ -327,11 +328,11 @@ class ReimbursementList
     {
         $bills = Bill::where('expense_id', $v['id'])->get();
         if (empty($v['bill'])) {//提交的发票明细为空
-            if (count($bills) > 0) {
-                $bills->delete();
-            }
+            $bills->each(function ($val) {
+                $val->delete();
+            });
         } else {//提交数据有发票
-            if (count($bills) > 0) {//数据库有发票
+            if ($bills->count() > 0) {//数据库有发票
                 $this->billsUpdateDispose($v);
             } else {//数据库无发票
                 $this->saveExpenseBills($v['bill'], $v['id']);
@@ -415,9 +416,9 @@ class ReimbursementList
         $reimburse['payee_bank_account'] = $payee->bank_account;
         $reimburse['payee_bank_other'] = $payee->bank_other;
         $reimburse['payee_phone'] = $payee->phone;
-        $reimburse['payee_province'] = $payee->province?$payee->province->region_name:'';
-        $reimburse['payee_city'] = $payee->city?$payee->city->region_name:'';
-        $reimburse['payee_bank_dot'] = $payee->bank_dot?$payee->bank_dot:'';
+        $reimburse['payee_province'] = $payee->province ? $payee->province->region_name : '';
+        $reimburse['payee_city'] = $payee->city ? $payee->city->region_name : '';
+        $reimburse['payee_bank_dot'] = $payee->bank_dot ? $payee->bank_dot : '';
         $reimburse['status_id'] = 0;
         if (!empty($request->expense)) {
             $total = array_pluck($request->expense, 'send_cost');
@@ -515,14 +516,15 @@ class ReimbursementList
                 }
                 $api = new DingdingApi();
 //                $dingDingId = '0564652744672687';
-                $msgContent = $this->getMsgContent($request,$reimburse);//获取消息内容
+                $msgContent = $this->getMsgContent($request, $reimburse);//获取消息内容
                 $api->sendOaMessage($msgContent, $dingDingId);//发送oa消息
             }
         }
         return 'success';
     }
 
-    private function getMsgContent($request,$reimburse){
+    private function getMsgContent($request, $reimburse)
+    {
         $msgcontent = [
             'message_url' => route('pending_list'),
             'head' => [

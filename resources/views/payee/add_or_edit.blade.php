@@ -25,17 +25,18 @@
                     <option value="交通银行" @if($user['bank_other'] == "交通银行") selected @endif>交通银行</option>
                     <option value="招商银行" @if($user['bank_other'] == "招商银行") selected @endif>招商银行</option>
                     <option value="中国邮政储蓄银行" @if($user['bank_other'] == "中国邮政储蓄银行") selected @endif>中国邮政储蓄银行</option>
+                    <option value="农村商业银行" @if($user['bank_other'] == "农村商业银行") selected @endif>农村商业银行</option>
                 </select>
             </div>
             <div>
                 <p><i class="fa fa-user"></i> 开户名(<span class="text-danger">必填</span>)</p>
-                <input type="text" name="bank_account_name" placeholder="如：张三" limit="2,5" maxlength="5" minlength="2"
+                <input type="text" name="bank_account_name" placeholder="如：张三" limit="2,20" maxlength="20" minlength="2"
                        value="{{$user['bank_account_name'] or ''}}" required>
             </div>
             <div>
                 <p><i class="fa fa-pencil"></i> 银行卡号(<span class="text-danger">必填</span>)</p>
                 <input type="text" name="bank_account" placeholder="请输入银行卡号如622******888" limit="15,19"
-                       value="{{$user['bank_account'] or ''}}" maxlength="19" required data_type="num">
+                       value="{{$user['bank_account'] or ''}}" maxlength="20" required data_type="num">
             </div>
             <div>
                 <p><i class="fa fa-flag"></i> 开户行所在省(<span class="text-danger">必填</span>)</p>
