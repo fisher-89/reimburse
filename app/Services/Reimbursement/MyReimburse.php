@@ -113,7 +113,7 @@ class MyReimburse
     {
         $staff_sn = session()->get('current_user')['staff_sn'];
         return Reimbursement::where(['staff_sn' => $staff_sn, 'status_id' => 0, 'is_homepage' => 1, 'is_delete' => 0])
-            ->orderBy('create_time', 'desc')
+            ->orderBy('id', 'desc')
             ->get();
     }
 

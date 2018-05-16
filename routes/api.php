@@ -15,4 +15,6 @@ Route::group(['namespace' => 'Api'], function () {
         Route::get('/approverCache', ['uses' => 'ApproverController@approverUserToCache']);//审批人存入缓存
     });
 });
+Route::post('callback/manager', 'Api\AfterAuditController@managerProcess');//品牌副总审批回调
+Route::post('callback/finance-officer', 'Api\AfterAuditController@financeOfficerProcess');//品牌副总审批回调
 
