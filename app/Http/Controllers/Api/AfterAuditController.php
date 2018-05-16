@@ -56,7 +56,7 @@ class AfterAuditController extends Controller
         if ($request->EventType == 'bpms_instance_change' && $request->type == 'finish') {
             switch ($request->result) {
                 case 'agree':
-                    $reimbursement->status_id = 7;
+                    $reimbursement->status_id = 6;
                     $reimbursement->process_instance_id = '';
                     break;
                 case 'refuse';
