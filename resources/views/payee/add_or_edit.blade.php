@@ -17,15 +17,12 @@
             </div>
             <div>
                 <p><i class="fa fa-file"></i> 银行类型(<span class="text-danger">必填</span>)</p>
-                <select class="form-control" id="bank_other" name="bank_other" required onchange="bankOtherChange(this.value)">
-                    <option value="中国农业银行" @if($user['bank_other'] == "中国农业银行") selected @endif>中国农业银行</option>
-                    <option value="中国工商银行" @if($user['bank_other'] == "中国工商银行") selected @endif>中国工商银行</option>
-                    <option value="中国建设银行" @if($user['bank_other'] == "中国建设银行") selected @endif>中国建设银行</option>
-                    <option value="中国银行" @if($user['bank_other'] == "中国银行") selected @endif>中国银行</option>
-                    <option value="交通银行" @if($user['bank_other'] == "交通银行") selected @endif>交通银行</option>
-                    <option value="招商银行" @if($user['bank_other'] == "招商银行") selected @endif>招商银行</option>
-                    <option value="中国邮政储蓄银行" @if($user['bank_other'] == "中国邮政储蓄银行") selected @endif>中国邮政储蓄银行</option>
-                    <option value="农村商业银行" @if($user['bank_other'] == "农村商业银行") selected @endif>农村商业银行</option>
+                <select class="form-control" id="bank_other" name="bank_other" required
+                        onchange="bankOtherChange(this.value)">
+                    @foreach(\App\Models\Bank::all() as $bank)
+                        <option value="{{$bank->name}}"
+                                @if($user['bank_other'] == $bank->name) selected @endif>{{$bank->name}}</option>
+                    @endforeach
                 </select>
             </div>
             <div>
@@ -54,7 +51,7 @@
                 <input type="text" name="bank_dot" placeholder="请填写开户网点" maxlength="30"
                        value="{{$user['bank_dot'] or ''}}">
             </div>
-            <input type="hidden" name="id" value="{{$user['id'] or ''}}"/>
+            <input type="hidden" name="id" value="{{$user['id'] or ''}}" />
         </form>
     </div>
 @endsection
@@ -71,113 +68,113 @@
     @parent
     <script type="text/javascript" src="{{asset('js/reimburse/region.js')}}"></script>
     <script>
-        $(function () {
-            //初始获取省市区数据
-            region.getRegion();
-            bankDotInit();//初始开户网点
+      $(function () {
+        //初始获取省市区数据
+        region.getRegion();
+        bankDotInit();//初始开户网点
 
-        });
+      });
 
-        //地区处理
-        var region = {
-            regionData: new regionClass(),  //实列地区类
-            updateProvinceId:'{{$user->province_of_account or 510000}}',//编辑时省id 或默认24四川省
-            updateCityId : '{{$user->city_of_account or ''}}',//编辑时的市id
+      //地区处理
+      var region = {
+        regionData: new regionClass(),  //实列地区类
+        updateProvinceId: '{{$user->province_of_account or 510000}}',//编辑时省id 或默认24四川省
+        updateCityId: '{{$user->city_of_account or ''}}',//编辑时的市id
 
-            //获取省市数据
-            getRegion: function () {
-                var province_id = this.getProvinceSelectOption();//省的option 返回省id
-                this.getCitySelectOption(province_id);
-            },
+        //获取省市数据
+        getRegion: function () {
+          var province_id = this.getProvinceSelectOption();//省的option 返回省id
+          this.getCitySelectOption(province_id);
+        },
 
-            //获取省option数据
-            getProvinceSelectOption:function(){
-                var province = this.regionData.province();
-                var option_str = '';
-                $.each(province, function (k, v) {
-                    var selected = (v.id==region.updateProvinceId)? 'selected':'';
-                    option_str += '<option value="' + v.id + '" '+selected+'>' + v.region_name + '</option>';
-                });
-                $('#province_of_account').html(option_str);
-                return $('#province_of_account').val();
-            },
+        //获取省option数据
+        getProvinceSelectOption: function () {
+          var province = this.regionData.province();
+          var option_str = '';
+          $.each(province, function (k, v) {
+            var selected = (v.id == region.updateProvinceId) ? 'selected' : '';
+            option_str += '<option value="' + v.id + '" ' + selected + '>' + v.region_name + '</option>';
+          });
+          $('#province_of_account').html(option_str);
+          return $('#province_of_account').val();
+        },
 
-            //获取市option数据  province_id 省id
-            getCitySelectOption:function(province_id){
-                var city =  this.regionData.city();
-                var html = '';
-                html ='<option value="">--请选择--</option>';
-                $.each(city, function (k, v) {
-                    if (v.parent_id == province_id) {
-                        var selected = (v.id == region.updateCityId) ? "selected" : '';
-                        html += '<option value="' + v.id + '" '+selected+' >' + v.region_name + '</option>'
-                    }
-                });
-                $('#city_of_account').html(html);
-            },
-
-            //change 省
-            provinceChange:function(province_id){
-                this.getCitySelectOption(province_id);
-            },
-        };
-
-
-        function save() {
-            $(".waiting").show();
-            var url = $("#form").attr("action");
-            var data = $("#form").serialize();
-            var type = $("#form").attr('method');
-            $.ajax({
-                type: type,
-                url: url,
-                data: data,
-                success: function (info) {
-                    if (info === "success") {
-                        window.history.go(-1);
-                    } else {
-                        $(".waiting").hide();
-                        alert("保存失败,返回值：" + info);
-                    }
-                },
-                error: function (err) {
-                    $(".waiting").hide();
-                    if (err.status === 422) {
-                        var responses = JSON.parse(err.responseText);
-                        for (var i in responses) {
-                            alert(responses[i]);
-                        }
-
-                    } else {
-                        document.write(err.responseText);
-                    }
-                }
-            });
-        }
-
-
-        /**
-         * 初始开户网点
-         */
-        function bankDotInit(){
-            var value = $('#bank_other').val();
-            bankOtherChange(value);
-        }
-
-        /**
-         * 银行类型change
-         */
-        function bankOtherChange(value){
-            if (value !== "中国农业银行") {
-                $('#bank_dot').show();
-                $('#bank_dot input').attr('required', 'required');
-            } else {
-                $('#bank_dot').hide();
-                $('#bank_dot input').removeAttr('required');
-                $('#bank_dot input').val('');
+        //获取市option数据  province_id 省id
+        getCitySelectOption: function (province_id) {
+          var city = this.regionData.city();
+          var html = '';
+          html = '<option value="">--请选择--</option>';
+          $.each(city, function (k, v) {
+            if (v.parent_id == province_id) {
+              var selected = (v.id == region.updateCityId) ? "selected" : '';
+              html += '<option value="' + v.id + '" ' + selected + ' >' + v.region_name + '</option>'
             }
-            checkForm();
+          });
+          $('#city_of_account').html(html);
+        },
+
+        //change 省
+        provinceChange: function (province_id) {
+          this.getCitySelectOption(province_id);
+        },
+      };
+
+
+      function save() {
+        $(".waiting").show();
+        var url = $("#form").attr("action");
+        var data = $("#form").serialize();
+        var type = $("#form").attr('method');
+        $.ajax({
+          type: type,
+          url: url,
+          data: data,
+          success: function (info) {
+            if (info === "success") {
+              window.history.go(-1);
+            } else {
+              $(".waiting").hide();
+              alert("保存失败,返回值：" + info);
+            }
+          },
+          error: function (err) {
+            $(".waiting").hide();
+            if (err.status === 422) {
+              var responses = JSON.parse(err.responseText);
+              for (var i in responses) {
+                alert(responses[i]);
+              }
+
+            } else {
+              document.write(err.responseText);
+            }
+          }
+        });
+      }
+
+
+      /**
+       * 初始开户网点
+       */
+      function bankDotInit() {
+        var value = $('#bank_other').val();
+        bankOtherChange(value);
+      }
+
+      /**
+       * 银行类型change
+       */
+      function bankOtherChange(value) {
+        if (value !== "中国农业银行") {
+          $('#bank_dot').show();
+          $('#bank_dot input').attr('required', 'required');
+        } else {
+          $('#bank_dot').hide();
+          $('#bank_dot input').removeAttr('required');
+          $('#bank_dot input').val('');
         }
+        checkForm();
+      }
 
     </script>
 @stop
