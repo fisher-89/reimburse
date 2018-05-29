@@ -10,6 +10,9 @@ use App\Http\Controllers\Controller;
 
 class AfterAuditController extends Controller
 {
+    protected $financeOfficerSn = 110085;
+    protected $financeOfficerName = '郭娟';
+
     public function managerProcess(Request $request)
     {
         $processInstanceId = $request->processInstanceId;
@@ -23,7 +26,7 @@ class AfterAuditController extends Controller
             switch ($request->result) {
                 case 'agree':
                     $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
-                    if ($reimbursement->manager_sn != 110085 && $reimbursement->audited_cost > 5000) {
+                    if ($reimbursement->manager_sn != $this->financeOfficerSn && $reimbursement->audited_cost > 5000) {
                         $reimbursement->status_id = 5;
                         $response = $this->sendToFinanceOfficer($reimbursement);
                         if ($response['status'] != 1) return 0;
@@ -61,8 +64,8 @@ class AfterAuditController extends Controller
                     break;
                 case 'refuse';
                     $reimbursement->status_id = -1;
-                    $reimbursement->reject_staff_sn = 110085;
-                    $reimbursement->reject_name = '郭娟';
+                    $reimbursement->reject_staff_sn = $this->financeOfficerSn;
+                    $reimbursement->reject_name = $this->financeOfficerName;
                     $reimbursement->reject_time = date('Y-m-d H:i:s');
                     $reimbursement->process_instance_id = '';
                     break;
@@ -75,7 +78,7 @@ class AfterAuditController extends Controller
     protected function sendToFinanceOfficer($reimbursement)
     {
         $processCode = 'PROC-GLYJ5N2V-E11VUX0YRK67A1WOOODU2-G8JBUYGJ-1';
-        $approvers = [110085];
+        $approvers = [$this->financeOfficerSn];
         $formData = $this->makeFormData($reimbursement);
         $params = [
             'process_code' => $processCode,
