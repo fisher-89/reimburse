@@ -40,6 +40,7 @@ class AfterAuditController extends Controller
                     $reimbursement->reject_staff_sn = $reimbursement->manager_sn;
                     $reimbursement->reject_name = $reimbursement->manager_name;
                     $reimbursement->reject_time = date('Y-m-d H:i:s');
+                    $reimbursement->process_instance_id = '';
                     break;
             }
             return $reimbursement->save() ? 1 : 0;
