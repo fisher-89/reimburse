@@ -32,7 +32,7 @@
             </div>
             <div>
                 <p><i class="fa fa-pencil"></i> 银行卡号(<span class="text-danger">必填</span>)</p>
-                <input type="text" name="bank_account" placeholder="请输入银行卡号如622******888" limit="15,19"
+                <input type="text" name="bank_account" placeholder="请输入银行卡号如622******888" limit="12,20"
                        value="{{$user['bank_account'] or ''}}" maxlength="20" required data_type="num">
             </div>
             <div>
