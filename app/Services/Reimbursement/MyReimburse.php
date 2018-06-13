@@ -27,7 +27,7 @@ class MyReimburse
         $data = [
             'notSubmit' => $this->getNotSubmit(),
             'hasSubmit' => $this->getHasSubmit(),
-            'complete'=>$this->getComplete(),
+            'complete' => $this->getComplete(),
             'hasReject' => $this->getHasReject(),
         ];
         return view('reimbursement/my_reimbursement_list_data', ['data' => $data]);
@@ -54,14 +54,14 @@ class MyReimburse
             $reimburse->status_id = 0;
             $reimburse->save();
             $reimList = new ReimbursementList();
-            $dingding  =$reimList->getUserDingDingId($reimburse['approver_staff_sn']);
-            if($dingding == 'dingdingError'){
+            $dingding = $reimList->getUserDingDingId($reimburse['approver_staff_sn']);
+            if ($dingding == 'dingdingError') {
                 return $dingding;
             }
 //            $dingding = '0564652744672687';
             $api = new DingdingApi();
-            $content = $reimburse->realname."-已把报销单撤回了。描述-".$reimburse->description;
-            $api->sendTextMessages($dingding,$content);//发送消息到审批人
+            $content = $reimburse->realname . "-已把报销单撤回了。描述-" . $reimburse->description;
+            $api->sendTextMessages($dingding, $content);//发送消息到审批人
             return 'success';
         }
         return 'error';
@@ -95,9 +95,10 @@ class MyReimburse
      * 删除已驳回单
      * @param $id
      */
-    public function deleteReject($id){
-        $reim = Reimbursement::where(['staff_sn'=>session()->get('current_user')['staff_sn'],'status_id'=>-1])->find($id);
-        if(count($reim)<1){
+    public function deleteReject($id)
+    {
+        $reim = Reimbursement::where(['staff_sn' => session()->get('current_user')['staff_sn'], 'status_id' => -1])->find($id);
+        if (count($reim) < 1) {
             return 'error';
         }
         $reim->is_homepage = 0;
@@ -147,7 +148,10 @@ class MyReimburse
     public function getComplete()
     {
         $staff_sn = session('current_user')['staff_sn'];
-        $data = Reimbursement::with('status')->where(['staff_sn'=>$staff_sn,'status_id'=>4,'is_delete'=>0])->orderBy('audit_time','desc')->get();
+        $data = Reimbursement::with('status')
+            ->where(['staff_sn' => $staff_sn, 'is_delete' => 0])
+            ->where('status_id', '>=', 4)
+            ->orderBy('audit_time', 'desc')->get();
         return $data;
     }
 
