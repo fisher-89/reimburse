@@ -62,7 +62,7 @@ class OAService
      */
     public function getAuthCode()
     {
-        $url = $this->oaApiPath . 'get_auth_code';
+        $url = $this->oaApiPath . '/get_auth_code';
         $params = '?' . http_build_query(['app_id' => $this->appId, 'redirect_uri' => $this->receiptUrl]);
         $url .= $params;
         header('Location:' . $url);
@@ -74,7 +74,7 @@ class OAService
      */
     public function getAppToken()
     {
-        $url = $this->oaApiPath . 'get_token';
+        $url = $this->oaApiPath . '/get_token';
         $authCode = request()->auth_code;
         $redirectUri = trim(url()->current(), '/');
         $message = ['auth_code' => $authCode, 'redirect_uri' => $redirectUri, 'secret' => $this->makeSecret($authCode)];
@@ -96,7 +96,7 @@ class OAService
      */
     public function refreshAppToken()
     {
-        $url = $this->oaApiPath . 'refresh_token';
+        $url = $this->oaApiPath . '/refresh_token';
         $refreshToken = session('OA_refresh_token');
         session()->forget('OA_refresh_token');
         $message = ['refresh_token' => $refreshToken];
