@@ -54,7 +54,7 @@ class PayeeController extends Controller
             'phone' => 'required|digits:11',
             'bank_other' => ['required', 'exists:banks,name'],
             'bank_account_name' => 'required|string|between:2,20',
-            'bank_account' => 'required|digits_between:9,20',
+            'bank_account' => 'required|digits_between:9,22',
             'province_of_account' => 'required|exists:region,id',
             'bank_dot' => 'required_unless:bank_other,中国农业银行|string|max:30',
         ];
