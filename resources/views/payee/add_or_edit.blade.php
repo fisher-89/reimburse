@@ -11,7 +11,7 @@
         <form action="{{asset('payee_save')}}" method="post" id="form">
             {{csrf_field()}}
             <div>
-                <p><i class="fa fa-phone"></i> 收款人手机(<span class="text-danger">个人账户必填</span>)</p>
+                <p><i class="fa fa-phone"></i> 收款人手机(<span class="text-danger">必填</span>)</p>
                 <input type="text" name="phone" placeholder="请输入手机号码" limit="11,11" maxlength="11"
                        value="{{$user['phone'] or ''}}" data_type="num" required>
             </div>
