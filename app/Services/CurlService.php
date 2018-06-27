@@ -7,18 +7,22 @@
 
 namespace App\Services;
 
-class CurlService {
+class CurlService
+{
 
     private $resource;
     private $url;
     private $port = 80;
+    protected $header = [];
 
-    public static function build($url) {
+    public static function build($url)
+    {
         $curl = new CurlService();
         return $curl->setUrl($url);
     }
 
-    public function get() {
+    public function get()
+    {
         $this->init();
         curl_setopt($this->resource, CURLOPT_URL, $this->url);
         $response = curl_exec($this->resource);
@@ -29,7 +33,8 @@ class CurlService {
         return $this->decodeResponse($response);
     }
 
-    public function sendMessage($message) {
+    public function sendMessage($message)
+    {
         $this->init();
         if (is_array($message)) {
             $data = '?' . http_build_query($message);
@@ -42,29 +47,35 @@ class CurlService {
         return $response;
     }
 
-    public function sendMessageByPost($message) {
+    public function sendMessageByPost($message)
+    {
         $this->init();
         curl_setopt($this->resource, CURLOPT_POST, true);
         $message = json_encode($message);
         curl_setopt($this->resource, CURLOPT_POSTFIELDS, $message);
-        $this->setHeader(['Content-Type:application/json']);
+        $this->setHeader([
+            'X-Requested-With:XMLHttpRequest',
+            'Content-Type:application/json'
+        ]);
         $response = $this->get();
         return $response;
     }
 
-    public function setUrl($url) {
+    public function setUrl($url)
+    {
         $this->url = $url;
         $this->resource = curl_init();
         $preg = '/:\d+/';
         if (preg_match($preg, $url, $match)) {
-            $this->port = (int) substr($match[0], 1);
+            $this->port = (int)substr($match[0], 1);
             $url = str_replace($match[0], '', $url);
             curl_setopt($this->resource, CURLOPT_PORT, $this->port);
         }
         return $this;
     }
 
-    private function init() {
+    private function init()
+    {
         curl_setopt($this->resource, CURLOPT_HEADER, 0);
         curl_setopt($this->resource, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($this->resource, CURLOPT_SSL_VERIFYPEER, FALSE);
@@ -72,13 +83,16 @@ class CurlService {
         curl_setopt($this->resource, CURLOPT_REFERER, asset(url()->current()));
     }
 
-    public function setHeader($headers) {
-        curl_setopt($this->resource, CURLOPT_HTTPHEADER, $headers);
+    public function setHeader($headers)
+    {
+        $this->header = array_collapse([$this->header, $headers]);
+        curl_setopt($this->resource, CURLOPT_HTTPHEADER, $this->header);
         return $this;
     }
 
-    private function decodeResponse($response) {
-        $responseArr = json_decode($response,true);
+    private function decodeResponse($response)
+    {
+        $responseArr = json_decode($response, true);
         if (json_last_error() == JSON_ERROR_NONE) {
             return $responseArr;
         }

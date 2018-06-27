@@ -10,8 +10,6 @@ class HomeController extends Controller
 
     public function showHomePage()
     {
-//        dump(session('current_user'));
-//        dd(cache()->get('approver'));
         if (!Cache()->has('approver')) {
             app('Approver')->approverUserToCache();
         }
