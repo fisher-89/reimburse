@@ -11,7 +11,10 @@
   |
  */
 Route::group(['middleware' => 'dingding'], function () {
-    Route::get('/', ['uses' => 'HomeController@showHomePage'])->name('home'); //首页
+    Route::get('/', function () {
+        return redirect('/home');
+    });
+    Route::get('/home', ['uses' => 'HomeController@showHomePage'])->name('home'); //首页
     Route::get('/button', ['as' => 'button', 'uses' => 'HomeController@countReimbursementToApprove']); //获取首页待审数量
     Route::get('/create_reimbursement/{id?}', ['uses' => 'ReimburseController@showCreatePage'])->name('create_reimbursement'); //创建报销单和编辑报销单
     Route::get('add_approver_user', ['uses' => 'ReimburseController@addApproverUser'])->name('add_approver_user'); //添加审批人 
