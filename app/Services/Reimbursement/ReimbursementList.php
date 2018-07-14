@@ -347,7 +347,14 @@ class ReimbursementList
      */
     private function billsUpdateDispose($v)
     {
-        Bill::where('expense_id', $v['id'])->delete();
+        Bill::where('expense_id', $v['id'])->get()->each(function ($bill) use (&$v) {
+            if (in_array($bill->pic_path, $v['bill'])) {
+                $key = array_search($bill->pic_path, $v['bill']);
+                array_pull($v['bill'], $key);
+            } else {
+                $bill->delete();
+            }
+        });
         $this->saveExpenseBills($v['bill'], $v['id']);
     }
 
