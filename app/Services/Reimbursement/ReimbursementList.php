@@ -250,7 +250,7 @@ class ReimbursementList
     private function rejected($reimburse, $request, $reimburse_data)
     {
         $new_data = array_except($reimburse, ['id']);
-        $new_data['create_time'] = date('Y-m-d H:i:s', time());
+        $new_data['created_at'] = date('Y-m-d H:i:s', time());
         $this->insertSaveSend($new_data, $request); //重新插入新数据
         $reimburse_data->is_delete = 1;//删除驳回单
         $reimburse_data->is_homepage = 0;
@@ -444,7 +444,7 @@ class ReimbursementList
         }
 
         if (!isset($request->id)) {//新增
-            $reimburse['create_time'] = date('Y-m-d H:i:s', time());
+            $reimburse['created_at'] = date('Y-m-d H:i:s', time());
         }
         return $reimburse;
     }
