@@ -3,7 +3,7 @@
 /**
  * oa接口
  */
-$http = env('OA_PATH', 'http://of.xigemall.com');
+$http = env('OA_PATH', 'localhost');
 
 return [
     'oa_path' => $http,
