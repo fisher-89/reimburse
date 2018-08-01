@@ -13,6 +13,11 @@ class AfterAuditController extends Controller
     protected $financeOfficerSn = 110085;
     protected $financeOfficerName = '郭娟';
 
+    /**
+     * 单条审批回调
+     * @param Request $request
+     * @return int
+     */
     public function managerProcess(Request $request)
     {
         $processInstanceId = $request->processInstanceId;
@@ -60,6 +65,7 @@ class AfterAuditController extends Controller
         if ($request->EventType == 'bpms_instance_change' && $request->type == 'finish') {
             switch ($request->result) {
                 case 'agree':
+                    $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
                     $reimbursement->status_id = 6;
                     $reimbursement->process_instance_id = '';
                     break;
@@ -113,5 +119,71 @@ class AfterAuditController extends Controller
             ];
         })->all();
         return $formData;
+    }
+
+    /**
+     * 品牌副总批量审批回调
+     * @param Request $request
+     */
+    public function batchApproveProcess(Request $request)
+    {
+        $processInstanceId = $request->processInstanceId;
+        $reimbursement = Reimbursement::where('process_instance_id', $processInstanceId)
+            ->where('status_id', 4)
+            ->get();
+        if (!$reimbursement) {
+            return 0;
+        }
+        if ($request->EventType == 'bpms_instance_change' && $request->type == 'finish') {
+            switch ($request->result) {
+                case 'agree'://同意
+                    return $this->agreeApprove($request, $reimbursement);
+                    break;
+                case 'refuse';//拒绝
+                    return $this->refuseApprove($request);
+                    break;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * 批量审核同意
+     * @param $request
+     */
+    protected function agreeApprove($request, $reimbursement)
+    {
+        $reimbursement->each(function ($reim) use ($request) {
+            if ($reim->manager_sn != $this->financeOfficerSn && $reim->audited_cost > 5000) {
+                $response = $this->sendToFinanceOfficer($reim);
+                if ($response['status'] != 1)
+                    return 0;
+                $reim->process_instance_id = $response['message'];
+                $reim->status_id = 5;
+            } else {
+                $reim->manager_approved_at = date('Y-m-d H:i:s');
+                $reim->status_id = 6;
+            }
+            $reim->save();
+        });
+        return 1;
+    }
+
+    /**
+     * 批量拒绝处理
+     * @param $request
+     */
+    protected function refuseApprove($request)
+    {
+        $processInstanceId = $request->processInstanceId;
+        $saveData = [
+            'process_instance_id' => '',
+            'manager_sn' => '',
+            'manager_name' => ''
+        ];
+        Reimbursement::where('process_instance_id', $processInstanceId)
+            ->where('status_id', 4)
+            ->update($saveData);
+        return 1;
     }
 }
