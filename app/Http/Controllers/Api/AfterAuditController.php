@@ -154,7 +154,7 @@ class AfterAuditController extends Controller
     protected function agreeApprove($request, $reimbursement)
     {
         $reimbursement->each(function ($reim) use ($request) {
-            if ($reim->manager_sn != $this->financeOfficerSn && $reim->audited_cost > 5000) {
+            if ((int)$reim->manager_sn != $this->financeOfficerSn && $reim->audited_cost > 5000) {
                 $response = $this->sendToFinanceOfficer($reim);
                 if ($response['status'] != 1)
                     return 0;
