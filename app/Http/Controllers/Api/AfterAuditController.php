@@ -41,11 +41,25 @@ class AfterAuditController extends Controller
                     }
                     break;
                 case 'refuse';
-                    $reimbursement->status_id = -1;
-                    $reimbursement->reject_staff_sn = $reimbursement->manager_sn;
-                    $reimbursement->reject_name = $reimbursement->manager_name;
-                    $reimbursement->reject_time = date('Y-m-d H:i:s');
+                    $reimbursement->status_id = 3;
+                    $reimbursement->second_rejecter_staff_sn = $reimbursement->manager_sn;
+                    $reimbursement->second_rejecter_name = $reimbursement->manager_name;
+                    $reimbursement->second_rejected_at = date('Y-m-d H:i:s');
                     $reimbursement->process_instance_id = '';
+
+                    $reimbursement->accountant_staff_sn = '';
+                    $reimbursement->accountant_name = '';
+                    $reimbursement->audit_time = null;
+                    $reimbursement->manager_sn = '';
+                    $reimbursement->manager_name = '';
+                    $reimbursement->manager_approved_at = null;
+                    $reimbursement->expenses
+                        ->where('is_approved', 1)
+                        ->whereIn('id', array_pluck($reimbursement->expenses, 'id'))
+                        ->each(function ($expense) {
+                            $expense->is_audited = 0;
+                            $expense->save();
+                        });
                     break;
             }
             return $reimbursement->save() ? 1 : 0;
@@ -70,11 +84,25 @@ class AfterAuditController extends Controller
                     $reimbursement->process_instance_id = '';
                     break;
                 case 'refuse';
-                    $reimbursement->status_id = -1;
-                    $reimbursement->reject_staff_sn = $this->financeOfficerSn;
-                    $reimbursement->reject_name = $this->financeOfficerName;
-                    $reimbursement->reject_time = date('Y-m-d H:i:s');
+                    $reimbursement->status_id = 3;
+                    $reimbursement->second_rejecter_staff_sn = $this->financeOfficerSn;
+                    $reimbursement->second_rejecter_name = $this->financeOfficerName;
+                    $reimbursement->second_rejected_at = date('Y-m-d H:i:s');
                     $reimbursement->process_instance_id = '';
+
+                    $reimbursement->accountant_staff_sn = '';
+                    $reimbursement->accountant_name = '';
+                    $reimbursement->audit_time = null;
+                    $reimbursement->manager_sn = '';
+                    $reimbursement->manager_name = '';
+                    $reimbursement->manager_approved_at = null;
+                    $reimbursement->expenses
+                        ->where('is_approved', 1)
+                        ->whereIn('id', array_pluck($reimbursement->expenses, 'id'))
+                        ->each(function ($expense) {
+                            $expense->is_audited = 0;
+                            $expense->save();
+                        });
                     break;
             }
             return $reimbursement->save() ? 1 : 0;
@@ -179,7 +207,10 @@ class AfterAuditController extends Controller
         $saveData = [
             'process_instance_id' => '',
             'manager_sn' => '',
-            'manager_name' => ''
+            'manager_name' => '',
+            'second_rejecter_staff_sn'=>$this->financeOfficerSn,
+            'second_rejecter_name' => $this->financeOfficerName,
+            'second_rejected_at'=>date('Y-m-d H:i:s'),
         ];
         Reimbursement::where('process_instance_id', $processInstanceId)
             ->where('status_id', 4)
