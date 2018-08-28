@@ -16,6 +16,8 @@ class CreateReimDepartmentsTable extends Migration
         Schema::create('reim_departments', function (Blueprint $table) {
             $table->increments('id');
             $table->char('name','20')->comment('资金归属名');
+            $table->mediumInteger('manager_sn')->comment('品牌副总员工编号');
+            $table->char('manager_name',10)->comment('品牌副总姓名');
             $table->dateTime('deleted_at')->nullable()->comment('软删除');
         });
         DB::statement("ALTER TABLE`bx_reim_departments` comment'资金归属表'");
