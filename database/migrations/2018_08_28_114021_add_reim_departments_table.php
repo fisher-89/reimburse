@@ -14,7 +14,7 @@ class AddReimDepartmentsTable extends Migration
     public function up()
     {
         Schema::table('reim_departments', function (Blueprint $table) {
-            $table->mediumInteger('cashier_sn')->comment('出纳员工编号')->nullable();
+            $table->mediumInteger('cashier_sn')->comment('出纳员工编号')->index()->nullable();
             $table->char('cashier_name',10)->comment('出纳姓名')->nullable();
         });
     }
