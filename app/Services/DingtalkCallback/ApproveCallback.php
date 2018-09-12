@@ -11,7 +11,7 @@ namespace App\Services\DingtalkCallback;
 
 class ApproveCallback
 {
-    use BatchApprove;
+    use BatchApprove, SingleApprove;
 
     protected $financeOfficerSn = 110085;
     protected $financeOfficerName = '郭娟';
@@ -22,5 +22,13 @@ class ApproveCallback
      */
     public function batchApproveCallback($request){
         return $this->batch($request);
+    }
+
+    /**
+     * 单条审批
+     * @param $request
+     */
+    public function singleApproveCallback($request){
+        return $this->single($request);
     }
 }

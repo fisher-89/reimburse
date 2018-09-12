@@ -28,51 +28,52 @@ class AfterAuditController extends Controller
      */
     public function managerProcess(Request $request)
     {
-        $processInstanceId = $request->processInstanceId;
-        $reimbursement = Reimbursement::where('process_instance_id', $processInstanceId)
-            ->where('status_id', 4)
-            ->first();
-        if (empty($reimbursement)) {
-            return 0;
-        }
-        if ($request->EventType == 'bpms_instance_change' && $request->type == 'finish') {
-            switch ($request->result) {
-                case 'agree':
-                    $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
-                    if ($reimbursement->manager_sn != $this->financeOfficerSn && $reimbursement->audited_cost > 5000) {
-                        $reimbursement->status_id = 5;
-                        $response = $this->sendToFinanceOfficer($reimbursement);
-                        if ($response['status'] != 1) return 0;
-                        $reimbursement->process_instance_id = $response['message'];
-                    } else {
-                        $reimbursement->status_id = 6;
-                    }
-                    break;
-                case 'refuse';
-                    $reimbursement->status_id = 3;
-                    $reimbursement->second_rejecter_staff_sn = $reimbursement->manager_sn;
-                    $reimbursement->second_rejecter_name = $reimbursement->manager_name;
-                    $reimbursement->second_rejected_at = date('Y-m-d H:i:s');
-                    $reimbursement->process_instance_id = '';
-
-                    $reimbursement->accountant_staff_sn = '';
-                    $reimbursement->accountant_name = '';
-                    $reimbursement->audit_time = null;
-                    $reimbursement->manager_sn = '';
-                    $reimbursement->manager_name = '';
-                    $reimbursement->manager_approved_at = null;
-                    $reimbursement->expenses
-                        ->where('is_approved', 1)
-                        ->whereIn('id', array_pluck($reimbursement->expenses, 'id'))
-                        ->each(function ($expense) {
-                            $expense->is_audited = 0;
-                            $expense->save();
-                        });
-                    break;
-            }
-            return $reimbursement->save() ? 1 : 0;
-        }
-        return 0;
+        return $this->approveCallback->singleApproveCallback($request);
+//        $processInstanceId = $request->processInstanceId;
+//        $reimbursement = Reimbursement::where('process_instance_id', $processInstanceId)
+//            ->where('status_id', 4)
+//            ->first();
+//        if (empty($reimbursement)) {
+//            return 0;
+//        }
+//        if ($request->EventType == 'bpms_instance_change' && $request->type == 'finish') {
+//            switch ($request->result) {
+//                case 'agree':
+//                    $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
+//                    if ($reimbursement->manager_sn != $this->financeOfficerSn && $reimbursement->audited_cost > 5000) {
+//                        $reimbursement->status_id = 5;
+//                        $response = $this->sendToFinanceOfficer($reimbursement);
+//                        if ($response['status'] != 1) return 0;
+//                        $reimbursement->process_instance_id = $response['message'];
+//                    } else {
+//                        $reimbursement->status_id = 6;
+//                    }
+//                    break;
+//                case 'refuse';
+//                    $reimbursement->status_id = 3;
+//                    $reimbursement->second_rejecter_staff_sn = $reimbursement->manager_sn;
+//                    $reimbursement->second_rejecter_name = $reimbursement->manager_name;
+//                    $reimbursement->second_rejected_at = date('Y-m-d H:i:s');
+//                    $reimbursement->process_instance_id = '';
+//
+//                    $reimbursement->accountant_staff_sn = '';
+//                    $reimbursement->accountant_name = '';
+//                    $reimbursement->audit_time = null;
+//                    $reimbursement->manager_sn = '';
+//                    $reimbursement->manager_name = '';
+//                    $reimbursement->manager_approved_at = null;
+//                    $reimbursement->expenses
+//                        ->where('is_approved', 1)
+//                        ->whereIn('id', array_pluck($reimbursement->expenses, 'id'))
+//                        ->each(function ($expense) {
+//                            $expense->is_audited = 0;
+//                            $expense->save();
+//                        });
+//                    break;
+//            }
+//            return $reimbursement->save() ? 1 : 0;
+//        }
+//        return 0;
     }
 
     public function financeOfficerProcess(Request $request)

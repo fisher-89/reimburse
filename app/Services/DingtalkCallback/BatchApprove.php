@@ -82,6 +82,8 @@ trait BatchApprove
                 $reimbursement->each(function ($reim) {
                     $reim->manager_approved_at = date('Y-m-d H:i:s');
                     $reim->status_id = 6;
+                    $reim->manager_sn = $this->financeOfficerSn;
+                    $reim->manager_name = $this->financeOfficerName;
                     $reim->save();
                 });
                 break;
