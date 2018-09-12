@@ -101,19 +101,19 @@ trait SingleApprove
 //            $reimbursement->second_rejecter_name = $managerName;
 //        }
         $reimbursement->status_id = 3;
-        $reimbursement->second_rejected_at = date('Y-m-d H:i:s');
-        $reimbursement->second_rejecte_remarks = $request->remark;
-        $reimbursement->process_instance_id = '';
-        $reimbursement->accountant_staff_sn = '';
-        $reimbursement->accountant_name = '';
-        $reimbursement->audit_time = date('Y-m-d H:i:s');
-        $reimbursement->expenses
-            ->where('is_approved', 1)
-            ->whereIn('id', array_pluck($reimbursement->expenses, 'id'))
-            ->each(function ($expense) {
-                $expense->is_audited = 0;
-                $expense->save();
-            });
+//        $reimbursement->second_rejected_at = date('Y-m-d H:i:s');
+//        $reimbursement->second_rejecte_remarks = $request->remark;
+//        $reimbursement->process_instance_id = '';
+//        $reimbursement->accountant_staff_sn = '';
+//        $reimbursement->accountant_name = '';
+//        $reimbursement->audit_time = date('Y-m-d H:i:s');
+//        $reimbursement->expenses
+//            ->where('is_approved', 1)
+//            ->whereIn('id', array_pluck($reimbursement->expenses, 'id'))
+//            ->each(function ($expense) {
+//                $expense->is_audited = 0;
+//                $expense->save();
+//            });
         $reimbursement->save();
         return 1;
     }
