@@ -68,17 +68,10 @@ trait SingleApprove
             }
 
         } else {
-            if ((int)$approverSn != (int)$managerSn) {
-                $reimbursement->status_id = 6;
-                $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
-                $reimbursement->manager_sn = $managerSn;
-                $reimbursement->manager_name = $managerName;
-            } else {
-                $reimbursement->status_id = 6;
-                $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
-                $reimbursement->manager_sn = $this->financeOfficerSn;
-                $reimbursement->manager_name = $this->financeOfficerName;
-            }
+            $reimbursement->status_id = 6;
+            $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
+            $reimbursement->manager_sn = $managerSn;
+            $reimbursement->manager_name = $managerName;
         }
         $reimbursement->save();
         return 1;
@@ -91,19 +84,21 @@ trait SingleApprove
         $managerName = $reimbursement->reim_department->manager_name;//资金归属管理人员工名字
 
         if ($reimbursement->audited_cost > 5000) {
-            if ((int)$approverSn == (int)$managerSn) {
+            if ($reimbursement->status_id == 5) {
                 $reimbursement->second_rejecter_staff_sn = $this->financeOfficerSn;
                 $reimbursement->second_rejecter_name = $this->financeOfficerName;
-
             } else {
-                $reimbursement->second_rejecter_staff_sn = $managerSn;
-                $reimbursement->second_rejecter_name = $managerName;
+                if ((int)$approverSn == (int)$managerSn) {
+                    $reimbursement->second_rejecter_staff_sn = $this->financeOfficerSn;
+                    $reimbursement->second_rejecter_name = $this->financeOfficerName;
+                } else {
+                    $reimbursement->second_rejecter_staff_sn = $managerSn;
+                    $reimbursement->second_rejecter_name = $managerName;
+                }
             }
         } else {
-            if ((int)$approverSn != (int)$managerSn) {
-                $reimbursement->second_rejecter_staff_sn = $managerSn;
-                $reimbursement->second_rejecter_name = $managerName;
-            }
+            $reimbursement->second_rejecter_staff_sn = $managerSn;
+            $reimbursement->second_rejecter_name = $managerName;
         }
         $reimbursement->status_id = 3;
         $reimbursement->second_rejected_at = date('Y-m-d H:i:s');
