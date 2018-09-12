@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Reimbursement;
+use App\Services\DingtalkCallback\ApproveCallback;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -12,6 +13,13 @@ class AfterAuditController extends Controller
 {
     protected $financeOfficerSn = 110085;
     protected $financeOfficerName = '郭娟';
+
+    public $approveCallback;
+
+    public function __construct(ApproveCallback $approveCallback)
+    {
+        $this->approveCallback = $approveCallback;
+    }
 
     /**
      * 单条审批回调
@@ -155,66 +163,7 @@ class AfterAuditController extends Controller
      */
     public function batchApproveProcess(Request $request)
     {
-        $processInstanceId = $request->processInstanceId;
-        $reimbursement = Reimbursement::where('process_instance_id', $processInstanceId)
-            ->where('status_id', 4)
-            ->get();
-        if (!$reimbursement) {
-            return 0;
-        }
-        if ($request->EventType == 'bpms_instance_change' && $request->type == 'finish') {
-            switch ($request->result) {
-                case 'agree'://同意
-                    return $this->agreeApprove($request, $reimbursement);
-                    break;
-                case 'refuse';//拒绝
-                    return $this->refuseApprove($request);
-                    break;
-            }
-        }
-        return 0;
+        return $this->approveCallback->batchApproveCallback($request);
     }
 
-    /**
-     * 批量审核同意
-     * @param $request
-     */
-    protected function agreeApprove($request, $reimbursement)
-    {
-        $reimbursement->each(function ($reim) use ($request) {
-            if ((int)$reim->manager_sn != $this->financeOfficerSn && $reim->audited_cost > 5000) {
-                $response = $this->sendToFinanceOfficer($reim);
-                if ($response['status'] != 1)
-                    return 0;
-                $reim->process_instance_id = $response['message'];
-                $reim->status_id = 5;
-            } else {
-                $reim->manager_approved_at = date('Y-m-d H:i:s');
-                $reim->status_id = 6;
-            }
-            $reim->save();
-        });
-        return 1;
-    }
-
-    /**
-     * 批量拒绝处理
-     * @param $request
-     */
-    protected function refuseApprove($request)
-    {
-        $processInstanceId = $request->processInstanceId;
-        $saveData = [
-            'process_instance_id' => '',
-            'manager_sn' => '',
-            'manager_name' => '',
-            'second_rejecter_staff_sn'=>$this->financeOfficerSn,
-            'second_rejecter_name' => $this->financeOfficerName,
-            'second_rejected_at'=>date('Y-m-d H:i:s'),
-        ];
-        Reimbursement::where('process_instance_id', $processInstanceId)
-            ->where('status_id', 4)
-            ->update($saveData);
-        return 1;
-    }
 }
