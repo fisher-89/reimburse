@@ -21,7 +21,7 @@ trait SingleApprove
     {
         $processInstanceId = $request->processInstanceId;
         $reimbursement = Reimbursement::where('process_instance_id', $processInstanceId)
-            ->whereIn('status_id', [4,5])
+            ->whereIn('status_id', [4, 5])
             ->first();
         if (empty($reimbursement)) {
             return 0;
@@ -34,7 +34,7 @@ trait SingleApprove
                     return $this->singleAgree($reimbursement);
                     break;
                 case 'refuse':
-                    return $this->singleRefuse($request,$reimbursement);
+                    return $this->singleRefuse($request, $reimbursement);
                     break;
             }
 
@@ -49,29 +49,42 @@ trait SingleApprove
         $managerName = $reimbursement->reim_department->manager_name;//资金归属管理人员工名字
 
         if ($reimbursement->audited_cost > 5000) {
-            if ((int)$approverSn == (int)$managerSn) {
+            if ($reimbursement->status_id == 5) {
                 $reimbursement->status_id = 6;
                 $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
                 $reimbursement->manager_sn = $this->financeOfficerSn;
                 $reimbursement->manager_name = $this->financeOfficerName;
             } else {
-                $reimbursement->status_id = 5;
-                $reimbursement->manager_sn = $managerSn;
-                $reimbursement->manager_name = $managerName;
+                if ((int)$approverSn == (int)$managerSn) {
+                    $reimbursement->status_id = 6;
+                    $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
+                    $reimbursement->manager_sn = $this->financeOfficerSn;
+                    $reimbursement->manager_name = $this->financeOfficerName;
+                } else {
+                    $reimbursement->status_id = 5;
+                    $reimbursement->manager_sn = $managerSn;
+                    $reimbursement->manager_name = $managerName;
+                }
             }
+
         } else {
             if ((int)$approverSn != (int)$managerSn) {
                 $reimbursement->status_id = 6;
                 $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
                 $reimbursement->manager_sn = $managerSn;
                 $reimbursement->manager_name = $managerName;
+            } else {
+                $reimbursement->status_id = 6;
+                $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
+                $reimbursement->manager_sn = $this->financeOfficerSn;
+                $reimbursement->manager_name = $this->financeOfficerName;
             }
         }
         $reimbursement->save();
         return 1;
     }
 
-    protected function singleRefuse($request,$reimbursement)
+    protected function singleRefuse($request, $reimbursement)
     {
         $approverSn = empty($reimbursement->approver_staff_sn) ? $reimbursement->staff_sn : $reimbursement->approver_staff_sn;//审批人员工编号
         $managerSn = $reimbursement->reim_department->manager_sn;//资金归属管理人员工编号
