@@ -27,53 +27,17 @@ trait BatchApprove
         }
         $statusId = $reimbursement[0]->status_id;
 
-        if ($request->type == 'finish' && $request->EventType == 'bpms_instance_change') {
+        if ($request->type == 'finish' && $request->EventType == 'bpms_task_change') {
             if ($statusId == 4) {
+                //审批任务结束
+                return $this->approveBpmsTaskChangeFinish($request, $reimbursement);
+
+            } elseif ($statusId == 5) {
                 //审批实例结束|终止
                 return $this->approveBpmsInstanceChangeFinish($request, $reimbursement);
-            } elseif ($statusId == 5) {
-                ////审批任务结束
-                return $this->approveBpmsTaskChangeFinish($request, $reimbursement);
-            }
-        } else if ($request->type == 'finish' && $request->EventType == 'bpms_task_change') {
-            //审批任务结束 驳回添加备注
-            if ($request->result == 'refuse' && $statusId == 5) {
-                $reimbursement->each(function ($reim) use ($request) {
-                    $reim->second_reject_remarks = $request->remark;
-                    $reim->save();
-                });
             }
         }
         return 0;
-    }
-
-    /**
-     * 审批实例结束
-     * @param $request
-     * @param $reimbursement
-     */
-    protected function approveBpmsInstanceChangeFinish($request, $reimbursement)
-    {
-        switch ($request->result) {
-            case 'agree'://同意
-                $reimbursement->each(function ($reim) {
-                    $reim->status_id = 5;
-                    $reim->save();
-                });
-                break;
-            case 'refuse';//拒绝
-                $reimbursement->each(function ($reim) {
-                    $reim->process_instance_id = '';
-                    $reim->second_rejecter_staff_sn = $reim->manager_sn;
-                    $reim->second_rejecter_name = $reim->manager_name;
-                    $reim->second_rejected_at = date('Y-m-d H:i:s');
-                    $reim->manager_sn = '';
-                    $reim->manager_name = '';
-                    $reim->save();
-                });
-                break;
-        }
-        return 1;
     }
 
     /**
@@ -86,17 +50,48 @@ trait BatchApprove
         switch ($request->result) {
             case 'agree'://同意
                 $reimbursement->each(function ($reim) {
+                    $reim->status_id = 5;
+                    $reim->save();
+                });
+                break;
+            case 'refuse';//拒绝
+                $reimbursement->each(function ($reim)use($request){
+                    $reim->process_instance_id = '';
+                    $reim->second_rejecter_staff_sn = $reim->manager_sn;
+                    $reim->second_rejecter_name = $reim->manager_name;
+                    $reim->second_rejected_at = date('Y-m-d H:i:s');
+                    $reim->second_reject_remarks = $request->remark;
+                    $reim->manager_sn = '';
+                    $reim->manager_name = '';
+                    $reim->save();
+                });
+                break;
+        }
+        return 1;
+    }
+
+    /**
+     * 审批实例结束
+     * @param $request
+     * @param $reimbursement
+     */
+    protected function approveBpmsInstanceChangeFinish($request, $reimbursement)
+    {
+        switch ($request->result) {
+            case 'agree'://同意
+                $reimbursement->each(function ($reim) {
                     $reim->manager_approved_at = date('Y-m-d H:i:s');
                     $reim->status_id = 6;
                     $reim->save();
                 });
                 break;
             case 'refuse';//拒绝
-                $reimbursement->each(function ($reim) {
+                $reimbursement->each(function ($reim)use($request) {
                     $reim->process_instance_id = '';
                     $reim->second_rejecter_staff_sn = $this->financeOfficerSn;
                     $reim->second_rejecter_name = $this->financeOfficerName;
                     $reim->second_rejected_at = date('Y-m-d H:i:s');
+                    $reim->second_reject_remarks = $request->remark;
                     $reim->manager_sn = '';
                     $reim->manager_name = '';
                     $reim->save();
