@@ -21,7 +21,7 @@ trait SingleApprove
     {
         $processInstanceId = $request->processInstanceId;
         $reimbursement = Reimbursement::where('process_instance_id', $processInstanceId)
-            ->where('status_id', 4)
+            ->whereIn('status_id', [4,5])
             ->first();
         if (empty($reimbursement)) {
             return 0;
