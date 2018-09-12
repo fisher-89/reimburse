@@ -16,6 +16,6 @@ Route::group(['namespace' => 'Api'], function () {
     });
 });
 Route::post('callback/manager', 'Api\AfterAuditController@managerProcess');//品牌副总审批回调
-Route::post('callback/finance-officer', 'Api\AfterAuditController@financeOfficerProcess');//品牌副总审批回调
+//Route::post('callback/finance-officer', 'Api\AfterAuditController@financeOfficerProcess');//品牌副总审批回调
 Route::post('callback/batch-callback','Api\AfterAuditController@batchApproveProcess');//品牌副总批量审批回调
 
