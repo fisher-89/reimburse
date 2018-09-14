@@ -27,78 +27,41 @@ trait SingleApprove
             return 0;
         }
 
-
         if ($request->type == 'finish' && $request->EventType == 'bpms_task_change') {
-            switch ($request->result) {
-                case 'agree':
-                    return $this->singleAgree($reimbursement);
-                    break;
-                case 'refuse':
-                    return $this->singleRefuse($request, $reimbursement);
-                    break;
-            }
-
-            return 0;
-        }
-    }
-
-    protected function singleAgree($reimbursement)
-    {
-        $approverSn = empty($reimbursement->approver_staff_sn) ? $reimbursement->staff_sn : $reimbursement->approver_staff_sn;//审批人员工编号
-        $managerSn = $reimbursement->reim_department->manager_sn;//资金归属管理人员工编号
-        $managerName = $reimbursement->reim_department->manager_name;//资金归属管理人员工名字
-
-        if ($reimbursement->audited_cost > 5000) {
-            if ($reimbursement->status_id == 5) {
-                $reimbursement->status_id = 6;
-                $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
-                $reimbursement->manager_sn = $this->financeOfficerSn;
-                $reimbursement->manager_name = $this->financeOfficerName;
-            } else {
-                if ((int)$approverSn == (int)$managerSn) {
-                    $reimbursement->status_id = 6;
-                    $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
-                    $reimbursement->manager_sn = $this->financeOfficerSn;
-                    $reimbursement->manager_name = $this->financeOfficerName;
-                } else {
-                    $reimbursement->status_id = 5;
-                    $reimbursement->manager_sn = $managerSn;
-                    $reimbursement->manager_name = $managerName;
+            if($reimbursement->status_id == 4) {
+                switch ($request->result) {
+                    case 'agree':
+                        $reimbursement->status_id = 5;
+                        $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
+                        $reimbursement->save();
+                        break;
+                    case 'refuse':
+                        $this->singleRefuse($request,$reimbursement);
+                        break;
                 }
             }
-
-        } else {
-            $reimbursement->status_id = 6;
-            $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
-            $reimbursement->manager_sn = $managerSn;
-            $reimbursement->manager_name = $managerName;
+        }else if($request->type == 'finish' && $request->EventType == 'bpms_instance_change'){
+            switch ($request->result) {
+                case 'agree':
+                    $reimbursement->status_id = 6;
+                    $reimbursement->save();
+                    break;
+                case 'refuse':
+                    $this->singleRefuse($request,$reimbursement);
+                    break;
+            }
         }
-        $reimbursement->save();
         return 1;
     }
 
-    protected function singleRefuse($request, $reimbursement)
-    {
-        $approverSn = empty($reimbursement->approver_staff_sn) ? $reimbursement->staff_sn : $reimbursement->approver_staff_sn;//审批人员工编号
-        $managerSn = $reimbursement->reim_department->manager_sn;//资金归属管理人员工编号
-        $managerName = $reimbursement->reim_department->manager_name;//资金归属管理人员工名字
 
-        if ($reimbursement->audited_cost > 5000) {
-            if ($reimbursement->status_id == 5) {
-                $reimbursement->second_rejecter_staff_sn = $this->financeOfficerSn;
-                $reimbursement->second_rejecter_name = $this->financeOfficerName;
-            } else {
-                if ((int)$approverSn == (int)$managerSn) {
-                    $reimbursement->second_rejecter_staff_sn = $this->financeOfficerSn;
-                    $reimbursement->second_rejecter_name = $this->financeOfficerName;
-                } else {
-                    $reimbursement->second_rejecter_staff_sn = $managerSn;
-                    $reimbursement->second_rejecter_name = $managerName;
-                }
-            }
-        } else {
-            $reimbursement->second_rejecter_staff_sn = $managerSn;
-            $reimbursement->second_rejecter_name = $managerName;
+    protected function singleRefuse($request,$reimbursement)
+    {
+        $reimbursement->second_rejecter_staff_sn = $reimbursement->manager_sn;
+        $reimbursement->second_rejecter_name = $reimbursement->manager_name;
+        if($request->EventType = 'bpms_instance_change'){
+            $reimbursement->second_rejecter_staff_sn = $this->financeOfficerSn;
+            $reimbursement->second_rejecter_name = $this->financeOfficerName;
         }
         $reimbursement->status_id = 3;
         $reimbursement->second_rejected_at = date('Y-m-d H:i:s');
@@ -115,6 +78,5 @@ trait SingleApprove
                 $expense->save();
             });
         $reimbursement->save();
-        return 1;
     }
 }
