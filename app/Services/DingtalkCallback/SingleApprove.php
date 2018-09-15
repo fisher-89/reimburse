@@ -69,7 +69,7 @@ trait SingleApprove
         $reimbursement->process_instance_id = '';
         $reimbursement->accountant_staff_sn = '';
         $reimbursement->accountant_name = '';
-        $reimbursement->audit_time = date('Y-m-d H:i:s');
+        $reimbursement->audit_time = null;
         $reimbursement->expenses
             ->where('is_approved', 1)
             ->whereIn('id', array_pluck($reimbursement->expenses, 'id'))
