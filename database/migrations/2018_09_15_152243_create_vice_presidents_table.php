@@ -15,11 +15,10 @@ class CreateVicePresidentsTable extends Migration
     {
         Schema::create('vice_presidents', function (Blueprint $table) {
             $table->increments('id');
-            $table->char('staff_sn',6)->comment('副总工号');
-            $table->char('name',10)->comment('副总名字');
+            $table->char('staff_sn',6)->default('')->comment('副总工号');
+            $table->char('name',10)->default('')->comment('副总名字');
 //            $table->timestamps();
         });
-        DB::statement("ALTER TABLE`bx_vice_presidents` comment'品牌副总表'");
     }
 
     /**
