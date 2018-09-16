@@ -81,10 +81,7 @@ trait SingleApprove
 
     protected function singleRefuse($request, $reimbursement)
     {
-        if (
-            empty($reimbursement->finance_approved_sn) ||
-            (empty($reimbursement->manager_approved_at) && $reimbursement->finance_approved_sn && $reimbursement->finance_approved_sn)
-        ) {
+        if (empty($reimbursement->manager_approved_at) && $reimbursement->manager_sn) {
             $reimbursement->second_rejecter_staff_sn = $reimbursement->manager_sn;
             $reimbursement->second_rejecter_name = $reimbursement->manager_name;
         } else {
@@ -104,8 +101,7 @@ trait SingleApprove
         $reimbursement->finance_approved_sn = '';
         $reimbursement->finance_approved_name = '';
         $reimbursement->expenses
-            ->where('is_approved', 1)
-            ->whereIn('id', array_pluck($reimbursement->expenses, 'id'))
+            ->where('is_audited', 1)
             ->each(function ($expense) {
                 $expense->is_audited = 0;
                 $expense->save();
