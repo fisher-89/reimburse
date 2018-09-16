@@ -25,6 +25,7 @@ trait BatchApprove
         if (!$reimbursement) {
             return 0;
         }
+        $rejectRemark = $request->remark;
         if ($request->type == 'finish' && $request->EventType == 'bpms_task_change') {
             //审批任务结束
             switch ($request->result) {
@@ -32,7 +33,7 @@ trait BatchApprove
                     $this->batchApproveBpmsTaskChangeAgree($reimbursement);
                     break;
                 case 'refuse';//拒绝
-                    $this->batchApproveBpmsTaskChangeRefuse($reimbursement,$request);
+                    $this->batchApproveBpmsTaskChangeRefuse($reimbursement,$rejectRemark);
                     break;
             }
         }else if ($request->type == 'finish' && $request->EventType == 'bpms_instance_change') {
@@ -50,7 +51,7 @@ trait BatchApprove
                     });
                     break;
                 case 'refuse':
-                    $this->batchApproveBpmsTaskChangeRefuse($reimbursement,$request);
+                    $this->batchApproveBpmsTaskChangeRefuse($reimbursement,$rejectRemark);
                     break;
             }
         }
@@ -81,9 +82,9 @@ trait BatchApprove
         }
     }
 
-    protected function batchApproveBpmsTaskChangeRefuse($reimbursement,$request)
+    protected function batchApproveBpmsTaskChangeRefuse($reimbursement,$rejectRemark)
     {
-        $reimbursement->each(function ($reim)use($request){
+        $reimbursement->each(function ($reim)use($rejectRemark){
             $reim->second_rejecter_staff_sn = $reim->manager_sn;
             $reim->second_rejecter_name = $reim->manager_name;
             if($reim->manager_approved_at){
@@ -93,7 +94,7 @@ trait BatchApprove
             $reim->status_id = 4;
             $reim->process_instance_id = '';
             $reim->second_rejected_at = date('Y-m-d H:i:s');
-            $reim->second_reject_remarks = $request->remark;
+            $reim->second_reject_remarks = $rejectRemark;
             $reim->manager_sn = '';
             $reim->manager_name = '';
             $reim->manager_approved_at = null;
