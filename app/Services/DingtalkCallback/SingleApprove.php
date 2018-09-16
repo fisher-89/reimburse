@@ -36,6 +36,42 @@ trait SingleApprove
                     $this->singleRefuse($request, $reimbursement);
                     break;
             }
+        } else if ($request->type == 'finish' && $request->EventType == 'bpms_instance_change') {
+            switch ($request->result) {
+                case 'agree':
+                    $reimbursement->status_id = 6;
+                    if (empty($reimbursement->finance_approved_sn)) {
+                        $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
+                    } else {
+                        $reimbursement->finance_approved_at = date('Y-m-d H:i:s');
+                    }
+                    $reimbursement->save();
+                    break;
+                case 'refuse':
+                    $reimbursement->second_rejecter_staff_sn = $reimbursement->finance_approved_sn;
+                    $reimbursement->second_rejecter_name = $reimbursement->finance_approved_name;
+                    $reimbursement->status_id = 3;
+                    $reimbursement->second_rejected_at = date('Y-m-d H:i:s');
+                    $reimbursement->second_reject_remarks = $request->remark;
+                    $reimbursement->process_instance_id = '';
+                    $reimbursement->accountant_staff_sn = '';
+                    $reimbursement->accountant_name = '';
+                    $reimbursement->audit_time = null;
+                    $reimbursement->manager_sn = '';
+                    $reimbursement->manager_name = '';
+                    $reimbursement->manager_approved_at = null;
+                    $reimbursement->finance_approved_sn = '';
+                    $reimbursement->finance_approved_name = '';
+                    $reimbursement->expenses
+                        ->where('is_approved', 1)
+                        ->whereIn('id', array_pluck($reimbursement->expenses, 'id'))
+                        ->each(function ($expense) {
+                            $expense->is_audited = 0;
+                            $expense->save();
+                        });
+                    $reimbursement->save();
+                    break;
+            }
         }
 
 //        if ($request->type == 'finish' && $request->EventType == 'bpms_task_change') {
