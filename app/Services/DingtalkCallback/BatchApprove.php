@@ -25,81 +25,82 @@ trait BatchApprove
         if (!$reimbursement) {
             return 0;
         }
-        $statusId = $reimbursement[0]->status_id;
-
         if ($request->type == 'finish' && $request->EventType == 'bpms_task_change') {
-            if ($statusId == 4) {
-                //审批任务结束
-                return $this->approveBpmsTaskChangeFinish($request, $reimbursement);
-
-            } elseif ($statusId == 5) {
-                //审批实例结束|终止
-                return $this->approveBpmsInstanceChangeFinish($request, $reimbursement);
+            //审批任务结束
+            switch ($request->result) {
+                case 'agree'://同意
+                    $this->batchApproveBpmsTaskChangeAgree($reimbursement);
+                    break;
+                case 'refuse';//拒绝
+                    $this->batchApproveBpmsTaskChangeRefuse($reimbursement,$request);
+                    break;
+            }
+        }else if ($request->type == 'finish' && $request->EventType == 'bpms_instance_change') {
+            //审批实例结束|终止
+            switch ($request->result) {
+                case 'agree':
+                    $reimbursement->each(function ($reim) {
+                        if(empty($reim->finance_approved_sn)){
+                            $reim->manager_approved_at = date('Y-m-d H:i:s');
+                        }else{
+                            $reim->finance_approved_at = date('Y-m-d H:i:s');
+                        }
+                        $reim->status_id = 6;
+                        $reim->save();
+                    });
+                    break;
+                case 'refuse':
+                    $this->batchApproveBpmsTaskChangeRefuse($reimbursement,$request);
+                    break;
             }
         }
-        return 0;
-    }
-
-    /**
-     * 审批任务结束
-     * @param $request
-     * @param $reimbursement
-     */
-    protected function approveBpmsTaskChangeFinish($request, $reimbursement)
-    {
-        switch ($request->result) {
-            case 'agree'://同意
-                $reimbursement->each(function ($reim) {
-                    $reim->status_id = 5;
-                    $reim->save();
-                });
-                break;
-            case 'refuse';//拒绝
-                $reimbursement->each(function ($reim)use($request){
-                    $reim->process_instance_id = '';
-                    $reim->second_rejecter_staff_sn = $reim->manager_sn;
-                    $reim->second_rejecter_name = $reim->manager_name;
-                    $reim->second_rejected_at = date('Y-m-d H:i:s');
-                    $reim->second_reject_remarks = $request->remark;
-                    $reim->manager_sn = '';
-                    $reim->manager_name = '';
-                    $reim->save();
-                });
-                break;
-        }
         return 1;
     }
 
-    /**
-     * 审批实例结束
-     * @param $request
-     * @param $reimbursement
-     */
-    protected function approveBpmsInstanceChangeFinish($request, $reimbursement)
+    protected function batchApproveBpmsTaskChangeAgree($reimbursement)
     {
-        switch ($request->result) {
-            case 'agree'://同意
-                $reimbursement->each(function ($reim) {
-                    $reim->manager_approved_at = date('Y-m-d H:i:s');
-                    $reim->status_id = 6;
-                    $reim->manager_sn = $this->financeOfficerSn;
-                    $reim->manager_name = $this->financeOfficerName;
-                    $reim->save();
-                });
-                break;
-            case 'refuse';//拒绝
-                $reimbursement->each(function ($reim)use($request) {
-                    $reim->process_instance_id = '';
-                    $reim->second_rejecter_staff_sn = $this->financeOfficerSn;
-                    $reim->second_rejecter_name = $this->financeOfficerName;
-                    $reim->second_rejected_at = date('Y-m-d H:i:s');
-                    $reim->second_reject_remarks = $request->remark;
-                    $reim->manager_sn = '';
-                    $reim->manager_name = '';
-                    $reim->save();
-                });
-                break;
+        if(empty($reimbursement[0]->manager_approved_at) && $reimbursement[0]->finance_approved_sn){
+            $reimbursement->each(function ($reim) {
+                $reim->manager_approved_at = date('Y-m-d H:i:s');
+                $reim->status_id = 5;
+                $reim->save();
+            });
         }
-        return 1;
+        else if(empty($reimbursement[0]->manager_approved_at) && empty($reimbursement[0]->finance_approved_sn)){
+            $reimbursement->each(function ($reim) {
+                $reim->manager_approved_at = date('Y-m-d H:i:s');
+                $reim->status_id = 6;
+                $reim->save();
+            });
+        }else{
+            $reimbursement->each(function ($reim) {
+                $reim->finance_approved_at = date('Y-m-d H:i:s');
+                $reim->status_id = 6;
+                $reim->save();
+            });
+        }
     }
+
+    protected function batchApproveBpmsTaskChangeRefuse($reimbursement,$request)
+    {
+        $reimbursement->each(function ($reim)use($request){
+            $reim->second_rejecter_staff_sn = $reim->manager_sn;
+            $reim->second_rejecter_name = $reim->manager_name;
+            if($reim->manager_approved_at){
+                $reim->second_rejecter_staff_sn = $reim->finance_approved_sn;
+                $reim->second_rejecter_name = $reim->finance_approved_name;
+            }
+            $reim->status_id = 4;
+            $reim->process_instance_id = '';
+            $reim->second_rejected_at = date('Y-m-d H:i:s');
+            $reim->second_reject_remarks = $request->remark;
+            $reim->manager_sn = '';
+            $reim->manager_name = '';
+            $reim->manager_approved_at = null;
+            $reim->finance_approved_sn = '';
+            $reim->finance_approved_name = '';
+            $reim->save();
+        });
+    }
+
 }
