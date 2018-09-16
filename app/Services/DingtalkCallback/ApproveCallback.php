@@ -13,8 +13,6 @@ class ApproveCallback
 {
     use BatchApprove, SingleApprove;
 
-    protected $financeOfficerSn = 110085;
-    protected $financeOfficerName = '郭娟';
 
     /**
      * 批量审批回调

@@ -10,6 +10,7 @@ namespace App\Services\DingtalkCallback;
 
 
 use App\Models\Reimbursement;
+use App\Models\VicePresident;
 
 trait SingleApprove
 {
@@ -26,42 +27,76 @@ trait SingleApprove
         if (empty($reimbursement)) {
             return 0;
         }
-
         if ($request->type == 'finish' && $request->EventType == 'bpms_task_change') {
-            if($reimbursement->status_id == 4) {
-                switch ($request->result) {
-                    case 'agree':
-                        $reimbursement->status_id = 5;
-                        $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
-                        $reimbursement->save();
-                        break;
-                    case 'refuse':
-                        $this->singleRefuse($request,$reimbursement);
-                        break;
-                }
-            }
-        }else if($request->type == 'finish' && $request->EventType == 'bpms_instance_change'){
             switch ($request->result) {
                 case 'agree':
-                    $reimbursement->status_id = 6;
-                    $reimbursement->save();
+                    $this->singleAgree($reimbursement);
                     break;
                 case 'refuse':
-                    $this->singleRefuse($request,$reimbursement);
+                    $this->singleRefuse($request, $reimbursement);
                     break;
             }
         }
+
+//        if ($request->type == 'finish' && $request->EventType == 'bpms_task_change') {
+//            if($reimbursement->status_id == 4) {
+//                switch ($request->result) {
+//                    case 'agree':
+//                        $reimbursement->status_id = 5;
+//                        $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
+//                        $reimbursement->save();
+//                        break;
+//                    case 'refuse':
+//                        $this->singleRefuse($request,$reimbursement);
+//                        break;
+//                }
+//            }
+//        }else if($request->type == 'finish' && $request->EventType == 'bpms_instance_change'){
+//            switch ($request->result) {
+//                case 'agree':
+//                    $reimbursement->status_id = 6;
+//                    $reimbursement->save();
+//                    break;
+//                case 'refuse':
+//                    $this->singleRefuse($request,$reimbursement);
+//                    break;
+//            }
+//        }
         return 1;
     }
 
-
-    protected function singleRefuse($request,$reimbursement)
+    protected function singleAgree($reimbursement)
     {
-        $reimbursement->second_rejecter_staff_sn = $reimbursement->manager_sn;
-        $reimbursement->second_rejecter_name = $reimbursement->manager_name;
-        if($request->EventType = 'bpms_instance_change'){
-            $reimbursement->second_rejecter_staff_sn = $this->financeOfficerSn;
-            $reimbursement->second_rejecter_name = $this->financeOfficerName;
+        if ($reimbursement->manager_sn && empty($reimbursement->finance_approved_sn)) {
+            //副总审批
+            $reimbursement->status_id = 6;
+            $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
+        } else if (empty($reimbursement->manager_sn) && $reimbursement->finance_approved_sn) {
+            //郭娟、喜哥审批
+            $reimbursement->status_id = 6;
+            $reimbursement->finance_approved_at = date('Y-m-d H:i:s');
+        } else if ($reimbursement->manager_sn && $reimbursement->finance_approved_sn) {
+            //副总和郭娟审批
+            if (empty($reimbursement->manager_approved_at)) {
+                $reimbursement->status_id = 5;
+                $reimbursement->manager_approved_at = date('Y-m-d H:i:s');
+            } else {
+                $reimbursement->status_id = 6;
+                $reimbursement->finance_approved_at = date('Y-m-d H:i:s');
+            }
+        }
+
+        $reimbursement->save();
+    }
+
+    protected function singleRefuse($request, $reimbursement)
+    {
+        if (empty($reimbursement->finance_approved_sn) || (empty($reimbursement->manager_approved_at) && $reimbursement->finance_approved_sn)) {
+            $reimbursement->second_rejecter_staff_sn = $reimbursement->manager_sn;
+            $reimbursement->second_rejecter_name = $reimbursement->manager_name;
+        } else {
+            $reimbursement->second_rejecter_staff_sn = $reimbursement->finance_approved_sn;
+            $reimbursement->second_rejecter_name = $reimbursement->finance_approved_name;
         }
         $reimbursement->status_id = 3;
         $reimbursement->second_rejected_at = date('Y-m-d H:i:s');
@@ -70,6 +105,11 @@ trait SingleApprove
         $reimbursement->accountant_staff_sn = '';
         $reimbursement->accountant_name = '';
         $reimbursement->audit_time = null;
+        $reimbursement->manager_sn = '';
+        $reimbursement->manager_name = '';
+        $reimbursement->manager_approved_at = null;
+        $reimbursement->finance_approved_sn = '';
+        $reimbursement->finance_approved_name = '';
         $reimbursement->expenses
             ->where('is_approved', 1)
             ->whereIn('id', array_pluck($reimbursement->expenses, 'id'))
