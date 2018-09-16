@@ -25,7 +25,7 @@ trait BatchApprove
         if (!$reimbursement) {
             return 0;
         }
-        $rejectRemark = $request->remark;
+
         if ($request->type == 'finish' && $request->EventType == 'bpms_task_change') {
             //审批任务结束
             switch ($request->result) {
@@ -33,7 +33,7 @@ trait BatchApprove
                     $this->batchApproveBpmsTaskChangeAgree($reimbursement);
                     break;
                 case 'refuse';//拒绝
-                    $this->batchApproveBpmsTaskChangeRefuse($reimbursement,$rejectRemark);
+                    $this->batchApproveBpmsTaskChangeRefuse($reimbursement,$request);
                     break;
             }
         }else if ($request->type == 'finish' && $request->EventType == 'bpms_instance_change') {
@@ -51,7 +51,7 @@ trait BatchApprove
                     });
                     break;
                 case 'refuse':
-                    $this->batchApproveBpmsTaskChangeRefuse($reimbursement,$rejectRemark);
+                    $this->batchApproveBpmsTaskChangeRefuse($reimbursement,$request);
                     break;
             }
         }
@@ -82,8 +82,9 @@ trait BatchApprove
         }
     }
 
-    protected function batchApproveBpmsTaskChangeRefuse($reimbursement,$rejectRemark)
+    protected function batchApproveBpmsTaskChangeRefuse($reimbursement,$request)
     {
+        $rejectRemark = $request->remark;
         $reimbursement->each(function ($reim)use($rejectRemark){
             $reim->second_rejecter_staff_sn = $reim->manager_sn;
             $reim->second_rejecter_name = $reim->manager_name;
