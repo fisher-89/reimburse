@@ -4,8 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use DB;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Reimbursement extends Model {
+class Reimbursement extends Model
+{
+    use SoftDeletes;
 
     /**
      * 应该被调整为日期的属性
@@ -16,15 +19,18 @@ class Reimbursement extends Model {
 
     /* ----- 定义关联Start ----- */
 
-    public function status() {//报销单状态
+    public function status()
+    {//报销单状态
         return $this->belongsTo('App\Models\Reimbursement_status', 'status_id');
     }
 
-    public function expenses() {//消费明细
+    public function expenses()
+    {//消费明细
         return $this->hasMany('App\Models\Expense', 'reim_id')->orderBy('date', 'asc');
     }
 
-    public function reim_department() {//资金归属
+    public function reim_department()
+    {//资金归属
         return $this->belongsTo('App\Models\ReimDepartment')->withTrashed();
     }
 
