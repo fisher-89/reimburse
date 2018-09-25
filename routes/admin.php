@@ -16,4 +16,4 @@ use App\Http\Controllers\Admin;
 Route::resource('approvers', Admin\ApproverController::class)
     ->only(['index', 'store', 'update', 'destroy'])->parameters(['approvers' => 'department']);
 Route::resource('funding-brands', Admin\FundingBrandController::class)
-    ->only(['index', 'store', 'update', 'destroy'])->parameters(['fundingBrands' => 'reimDepartment']);
+    ->only(['index', 'store', 'update', 'destroy'])->parameters(['funding-brands' => 'reimDepartment']);
