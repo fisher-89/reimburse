@@ -86,12 +86,13 @@ class ApproverController extends Controller
      */
     public function validate(Request $request, $rules = [], $message = [], $customAttributes = [])
     {
+        $id = $request->route('department') ? $request->route('department')->id : null;
         $rules = [
             'department_id' => [
                 'required',
                 'integer',
                 Rule::unique('departments', 'department_id')
-                    ->whereNot('id', $request->route('department')),
+                    ->whereNot('id', $id),
             ],
             'reim_department_id' => [
                 'required',

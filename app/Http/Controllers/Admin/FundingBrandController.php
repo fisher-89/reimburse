@@ -6,6 +6,7 @@ use App\Models\ReimDepartment;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class FundingBrandController extends Controller
 {
@@ -78,8 +79,15 @@ class FundingBrandController extends Controller
 
     public function validate(Request $request, $rules = [], $message = [], $customAttributes = [])
     {
+        $id = $request->route('reimDepartment') ? $request->route('reimDepartment')->id : null;
         $rules = [
-            'name' => ['string', 'max:20'],
+            'name' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('reim_departments', 'name')
+                    ->whereNot('id', $id),
+            ],
             'manager_sn' => ['required_with:manager_name', 'integer', 'min:100000', 'max:999999'],
             'manager_name' => ['required', 'string', 'max:10'],
             'cashier_sn' => ['required_with:cashier_name', 'integer', 'min:100000', 'max:999999'],
