@@ -25,7 +25,7 @@ class Reimbursement extends Model {
     }
 
     public function reim_department() {//资金归属
-        return $this->belongsTo('App\Models\Reim_department')->withTrashed();
+        return $this->belongsTo('App\Models\ReimDepartment')->withTrashed();
     }
 
     /* ----- 定义关联End ----- */

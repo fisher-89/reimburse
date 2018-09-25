@@ -11,7 +11,7 @@ class Department extends Model
 
     public function reim_department()
     {
-        return $this->belongsTo('App\Models\Reim_department')->withTrashed();
+        return $this->belongsTo('App\Models\ReimDepartment')->withTrashed();
     }
 
     public function approver1()

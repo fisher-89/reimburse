@@ -9,7 +9,7 @@
 namespace App\Services\Reimbursement;
 
 use App\Models\Department;
-use App\Models\Reim_department;
+use App\Models\ReimDepartment;
 use App\Models\Reimbursement;
 use App\Models\Payee;
 use App\Models\Expense;
@@ -45,7 +45,7 @@ class ReimbursementList
         }
         $approver = app('Approver')->getIsApproverUsers($result); //判断当前用户是否有审批人
         $info['approver'] = $approver;
-        $info['reim_department'] = Reim_department::get(); //资金归属选择
+        $info['reim_department'] = ReimDepartment::get(); //资金归属选择
         return $info;
     }
 
