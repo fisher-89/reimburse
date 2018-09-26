@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Payee;
+use Illuminate\Validation\Rule;
 
 class PayeeController extends Controller
 {
@@ -57,6 +58,7 @@ class PayeeController extends Controller
             'bank_account' => 'required|digits_between:9,22',
             'province_of_account' => 'required|exists:region,id',
             'bank_dot' => 'required_unless:bank_other,中国农业银行|string|max:30',
+            'is_public' => ['required', Rule::in(['0', '1'])],
         ];
         if ($request->city_of_account) {
             $rules['city_of_account'] = 'required|numeric|exists:region,id,parent_id,' . $request->province_of_account;

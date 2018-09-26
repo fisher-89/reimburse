@@ -36,6 +36,13 @@
                        value="{{$user['bank_account'] or ''}}" maxlength="22" required>
             </div>
             <div>
+                <p><i class="fa fa-pencil"></i> 是否为对公账户(<span class="text-danger">必填</span>)</p>
+                <select class="form-control" name="is_public" required>
+                    <option value="1" @if($user['is_public']) selected @endif>是</option>
+                    <option value="0" @if(!$user['is_public']) selected @endif>否</option>
+                </select>
+            </div>
+            <div>
                 <p><i class="fa fa-flag"></i> 开户行所在省(<span class="text-danger">必填</span>)</p>
                 <select class="form-control" id="province_of_account" name="province_of_account" required
                         onchange="region.provinceChange(this.value)">
