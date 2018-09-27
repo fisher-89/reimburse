@@ -138,7 +138,6 @@ class ReimbursementList
             'remark' => 'string|max:150',
             'payee_id' => 'exists:payees,id',
             'payee_name' => 'exists:payees,bank_account_name,id,' . $request->payee_id,
-            'payee_is_public' => [Rule::in(['0', '1'])],
             'reim_department_id' => 'exists:reim_departments,id',
             'expense' => 'array',
             'expense.*.date' => 'required|date', //消费明细时间
@@ -169,7 +168,6 @@ class ReimbursementList
             'remark' => 'string|max:150',
             'payee_id' => 'required|exists:payees,id',
             'payee_name' => 'required|exists:payees,bank_account_name,id,' . $request->payee_id,
-            'payee_is_public' => ['required', Rule::in(['0', '1'])],
             'reim_department_id' => 'required|exists:reim_departments,id',
             'expense' => 'required|array',
             'expense.*.date' => 'required|date', //消费明细时间
