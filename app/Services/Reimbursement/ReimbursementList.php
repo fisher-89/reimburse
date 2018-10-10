@@ -317,6 +317,7 @@ class ReimbursementList
         if ($status_id == 3) {//无审批人直接提交到审核
             $expense_data['is_approved'] = 1;
         }
+        $expense_data['description'] = $this->filterEmoji($expense_data['description']);
         Expense::where('id', $v['id'])->update($expense_data);
         $this->updateBillData($v); //发票修改处理
     }
@@ -387,6 +388,7 @@ class ReimbursementList
         if ($status_id == 3) {//无审批人直接提交到审核步骤
             $data['is_approved'] = 1;
         }
+        $data['description'] = $this->filterEmoji($data['description']);
         $expense_id = Expense::insertGetId($data); //保存明细
         if (!empty($expense['bill'])) {//保存发票
             $this->saveExpenseBills($expense['bill'], $expense_id);
@@ -417,6 +419,8 @@ class ReimbursementList
     {
         $payee = Payee::with('province', 'city')->find($request->payee_id); //当前收款人
         $reimburse = $request->except(['_url', 'expense', 'send']);
+        $reimburse['description'] = $this->filterEmoji($reimburse['description']);
+        $reimburse['remark'] = $this->filterEmoji($reimburse['remark']);
         $reimburse['staff_sn'] = session()->get('current_user')['staff_sn'];
         $reimburse['realname'] = session()->get('current_user')['realname'];
         $reimburse['department_id'] = session()->get('current_user')['department']['id'];
@@ -449,6 +453,16 @@ class ReimbursementList
             $reimburse['created_at'] = date('Y-m-d H:i:s', time());
         }
         return $reimburse;
+    }
+
+    protected function filterEmoji($text)
+    {
+        return preg_replace_callback(
+            '/./u',
+            function (array $match) {
+                return strlen($match[0]) >= 4 ? '' : $match[0];
+            },
+            $text);
     }
 
     /**
