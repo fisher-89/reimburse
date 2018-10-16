@@ -101,9 +101,9 @@ class FundingBrandController extends Controller
         $customAttributes = [
             'name' => '名称',
             'manager_sn' => '品牌副总员工编号',
-            'manager_name' => '品牌副总姓名',
+            'manager_name' => '品牌副总',
             'cashier_sn' => '出纳员工编号',
-            'cashier_name' => '出纳姓名',
+            'cashier_name' => '出纳',
             'auditor' => '财务审核人',
             'auditor.*.auditor_staff_sn' => '财务审核人员工编号',
             'auditor.*.auditor_realname' => '财务审核人姓名',
