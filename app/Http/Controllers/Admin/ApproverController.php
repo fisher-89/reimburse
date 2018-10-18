@@ -36,6 +36,7 @@ class ApproverController extends Controller
         $department->save();
         $this->saveApprovers($request, $department);
         DB::commit();
+        app('Approver')->approverUserToCache();
         $department->load(['approver1', 'approver2', 'approver3']);
         return response($department, 201);
     }
@@ -59,6 +60,7 @@ class ApproverController extends Controller
         $department->approver3()->delete();
         $this->saveApprovers($request, $department);
         DB::commit();
+        app('Approver')->approverUserToCache();
         $department->load(['approver1', 'approver2', 'approver3']);
         return response($department, 201);
     }
