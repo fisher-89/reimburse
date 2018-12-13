@@ -28,7 +28,7 @@ class FundingBrandController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request);
+        $this->validater($request);
         $reimDepartment = new ReimDepartment();
         $reimDepartment->name = $request->name;
         $reimDepartment->manager_sn = $request->manager_sn;
@@ -52,7 +52,7 @@ class FundingBrandController extends Controller
      */
     public function update(Request $request, ReimDepartment $reimDepartment)
     {
-        $this->validate($request);
+        $this->validater($request);
         $reimDepartment->manager_sn = $request->manager_sn;
         $reimDepartment->manager_name = $request->manager_name;
         $reimDepartment->cashier_sn = $request->cashier_sn;
@@ -78,7 +78,7 @@ class FundingBrandController extends Controller
         return response('', 204);
     }
 
-    public function validate(Request $request, $rules = [], $message = [], $customAttributes = [])
+    public function validater(Request $request, $rules = [], $message = [], $customAttributes = [])
     {
         $id = $request->route('reimDepartment') ? $request->route('reimDepartment')->id : null;
         $rules = [
