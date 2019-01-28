@@ -28,7 +28,7 @@ class ApproverController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request);
+        $this->validater($request);
         $department = new Department();
         $department->department_id = $request->department_id;
         $department->reim_department_id = $request->reim_department_id;
@@ -50,7 +50,7 @@ class ApproverController extends Controller
      */
     public function update(Request $request, Department $department)
     {
-        $this->validate($request);
+        $this->validater($request);
         $department->department_id = $request->department_id;
         $department->reim_department_id = $request->reim_department_id;
         DB::beginTransaction();
@@ -86,7 +86,7 @@ class ApproverController extends Controller
      * @param array $customAttributes
      * @return array
      */
-    public function validate(Request $request, $rules = [], $message = [], $customAttributes = [])
+    public function validater(Request $request, $rules = [], $message = [], $customAttributes = [])
     {
         $id = $request->route('department') ? $request->route('department')->id : null;
         $rules = [
